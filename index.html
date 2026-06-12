@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWEET</title>
+    <style>
+        /* =========================================
+           1. FUENTES Y VARIABLES DEL SISTEMA 
+           ========================================= */
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Oleo+Script:wght@700&display=swap');
+
+        :root {
+            --bg-color-1: #FFEAEE; 
+            --bg-color-2: #F2E8FF; 
+            --accent-main: #E883A6; 
+            --accent-hover: #D86B93; 
+            --accent-bright: #FF69B4; 
+            --text-dark: #C44577; 
+            --text-muted: #D67096; 
+            
+            --glass-bg: rgba(255, 255, 255, 0.25); 
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --glass-highlight: rgba(255, 255, 255, 0.8);
+            
+            /* =========================================
+               EDITAR TAMAÑOS Y TRANSPARENCIAS DE SOMBRAS AQUI:
+               Los valores significan lo siguiente:
+               0    -> Desplazamiento horizontal (X)
+               4px  -> Desplazamiento vertical (Y)
+               12px -> Difuminado / Tamaño de la sombra (Blur)
+               rgba(232, 131, 166, 0.1) -> Color de la sombra. El último número (ej. 0.1) es la TRANSPARENCIA. 
+                                           0.1 = muy invisible, 0.9 = muy oscura/sólida.
+               ========================================= */
+            --shadow-sm: 0 4px 12px rgba(232, 131, 166, 0.1);
+            --shadow-md: 0 8px 24px -4px rgba(232, 131, 166, 0.15);
+            --shadow-lg: 0 16px 40px -8px rgba(232, 131, 166, 0.2);
+            --shadow-hover: 0 24px 48px -12px rgba(232, 131, 166, 0.3);
+            
+            --transition-smooth: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* =========================================
+           2. RESET, 100VH LAYOUT & CURSOR
+           ========================================= */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* Solución a la sombra fantasma: oculta imágenes vacías o rotas para que no generen sombras */
+        img[src=""], img:not([src]) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; box-shadow: none !important; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-dark);
+            background-color: var(--bg-color-1);
+            overflow: hidden; 
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh; /* NUEVO: Soporte responsivo dinámico exacto para iOS */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            -webkit-font-smoothing: antialiased;
+            padding-top: 65px; /* NUEVO: Padding global para compensar banner externo */
+            box-sizing: border-box;
+        }
+
+        @media (pointer: fine) {
+            * { cursor: none !important; }
+            .custom-cursor {
+                position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+                width: 32px; height: 32px; transform: translate(-50%, -50%);
+                transition: transform 0.1s ease-out;
+                display: flex; justify-content: center; align-items: center;
+            }
+            .custom-cursor::after {
+                content: '';
+                width: 100%; height: 100%;
+                /* EDITADO: Imagen local para el cursor */
+                background: url('cursor.png') no-repeat center;
+                background-size: contain;
+                filter: drop-shadow(0 0 5px rgba(255, 105, 180, 0.5));
+            }
+            .custom-cursor.click { transform: translate(-50%, -50%) scale(0.8); }
+            
+            .cursor-trail {
+                position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9998;
+                width: 10px; height: 10px; border-radius: 50%;
+                background: var(--accent-bright); filter: blur(4px);
+                transform: translate(-50%, -50%); transition: 0.1s linear; opacity: 0.4;
+            }
+        }
+
+        /* =========================================
+           3. BACKGROUND ANIMADO
+           ========================================= */
+        #bg-video {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            object-fit: cover; z-index: -3; pointer-events: none; opacity: 1;
+        }
+
+        #particles-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: -1;
+        }
+
+        #cursor-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 9997; /* Por encima del contenedor principal */
+        }
+
+        .ambient-background {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2;
+            background: linear-gradient(135deg, rgba(255, 234, 238, 0.4), rgba(242, 232, 255, 0.45));
+            pointer-events: none;
+        }
+
+        .clouds-container {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: -2; overflow: hidden;
+        }
+        .cloud {
+            position: absolute; background: #FFF; border-radius: 200px;
+            filter: blur(15px); opacity: 0.3; animation: drift linear infinite;
+        }
+        .cloud::before, .cloud::after { content: ''; position: absolute; background: #FFF; border-radius: 50%; }
+        .cloud-1 { width: 300px; height: 100px; top: 15%; left: -350px; animation-duration: 45s; }
+        .cloud-1::before { width: 150px; height: 150px; top: -70px; left: 40px; }
+        .cloud-1::after { width: 120px; height: 120px; top: -50px; left: 140px; }
+        .cloud-2 { width: 250px; height: 80px; top: 65%; left: -300px; animation-duration: 60s; opacity: 0.2; }
+        .cloud-2::before { width: 120px; height: 120px; top: -60px; left: 30px; }
+        .cloud-2::after { width: 100px; height: 100px; top: -40px; left: 110px; }
+        .cloud-3 { width: 400px; height: 120px; top: 35%; left: -500px; animation-duration: 75s; opacity: 0.25; transform: scale(1.2); }
+        .cloud-3::before { width: 180px; height: 180px; top: -90px; left: 50px; }
+        .cloud-3::after { width: 140px; height: 140px; top: -60px; left: 160px; }
+        @keyframes drift { from { transform: translateX(-15vw); } to { transform: translateX(115vw); } }
+
+        /* =========================================
+           4. NAVBAR
+           ========================================= */
+        .navbar {
+            position: fixed;
+            top: calc(clamp(1rem, 3vh, 2rem) + 65px); /* NUEVO: Compensado por el padding global */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.3); 
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border); border-top: 1px solid var(--glass-highlight);
+            border-radius: 100px; padding: 0.5rem 1rem; display: flex; gap: clamp(0.2rem, 1vw, 0.5rem);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-link {
+            text-decoration: none; color: var(--text-dark);
+            font-size: clamp(0.75rem, 1.5vh, 0.85rem); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+            padding: clamp(0.4rem, 1vh, 0.6rem) clamp(0.8rem, 2vw, 1.2rem);
+            border-radius: 100px; transition: var(--transition-smooth); cursor: pointer; border: none; background: transparent; font-family: inherit;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-main); background: rgba(255, 255, 255, 0.8); box-shadow: var(--shadow-sm);
+        }
+        .logo-btn{ 
+            margin-right: 150px;
+        }
+
+
+        /* =========================================
+           5. CONTENEDOR PRINCIPAL
+           ========================================= */
+        .main-glass-panel {
+            width: 90vw; max-width: 1200px; height: clamp(500px, 80vh, 85vh); 
+            margin-top: clamp(3rem, 8vh, 5rem); 
+            background: var(--glass-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border); border-top: 1px solid var(--glass-highlight); border-radius: 32px;
+            box-shadow: var(--shadow-lg); 
+            position: relative; z-index: 10; overflow: hidden;
+            /* FIX GLITCH VISUAL: Forza la aceleración GPU para que el blur y las sombras no parpadeen */
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+        }
+
+        /* =========================================
+           6. SISTEMA DE PESTAÑAS
+           ========================================= */
+        .tab-content {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            padding: clamp(1.5rem, 4vh, 4rem); opacity: 0; pointer-events: none;
+            visibility: hidden; /* NUEVO: Elimina definitivamente las sombras fantasma de otras pestañas */
+            transform: translateY(20px) scale(0.98); transition: var(--transition-smooth);
+            display: flex; align-items: center; justify-content: center;
+            overflow-y: auto; /* NUEVO: Permite scroll interno en móviles si el contenido es muy alto */
+            overflow-x: hidden;
+            scrollbar-width: none; /* SOPORTE FIREFOX: Oculta scrollbar general */
+            /* FIX GLITCH VISUAL: Capa aislada para evitar que elementos ocultos hagan "flicker" de sombras */
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            will-change: transform, opacity;
+        }
+        
+        /* Ocultar scrollbar visualmente pero mantener funcionalidad para un look limpio */
+        .tab-content::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        .tab-content.active { opacity: 1; pointer-events: auto; visibility: visible; transform: translateY(0) scale(1); }
+
+        /* =========================================
+           7. SECCIÓN 1: INICIO (HERO)
+           ========================================= */
+        .hero-layout { display: grid; grid-template-columns: 1fr 1fr; width: 100%; height: 100%; gap: clamp(1.5rem, 4vw, 4rem); align-items: center; }
+        .hero-content { display: flex; flex-direction: column; gap: clamp(1rem, 2vh, 1.5rem); }
+
+        .status-container {
+            display: flex; align-items: center; gap: 0.8rem;
+            background: rgba(255, 255, 255, 0.5); padding: 0.4rem 0.8rem;
+            border-radius: 50px; width: fit-content; border: 1px solid white;
+            margin-bottom: 0.5rem; box-shadow: var(--shadow-sm);
+        }
+        .avatar-mini {
+            width: 32px; height: 32px; border-radius: 50%; background: var(--bg-color-1);
+            border: 2px solid white; overflow: hidden; display: flex; justify-content: center; align-items: center;
+            transition: transform 0.3s ease; /* Transición suave ajustada */
+        }
+        .avatar-mini img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Ajuste: Hover con scale sin empujar el layout */
+        .avatar-mini:hover { transform: scale(1.5); }
+
+        .status-info { display: flex; align-items: center; gap: 0.4rem; }
+        .status-text { font-size: 0.85rem; font-weight: 700; color: var(--text-dark); }
+        .status-dot {
+            width: 8px; height: 8px; background: #2ecc71; border-radius: 50%;
+            box-shadow: 0 0 8px #2ecc71; animation: pulse-green 1.5s infinite;
+        }
+        .status-year { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-left: 0.2rem; }
+
+        @keyframes pulse-green {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.6; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .hero-title-wrapper {
+            display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem;
+            position: relative;
+        }
+
+        .hero-title {
+            display: flex; align-items: center; gap: 1rem; margin: 0; padding: 0;
+            position: relative; z-index: 2;
+        }
+        
+        .hero-text-img-gomi {
+            height: clamp(8rem, 25vh, 20rem); width: auto; object-fit: contain;
+            filter: drop-shadow(0px 6px 8px rgba(0, 0, 0, 0.15)) drop-shadow(0px 0px 18px rgba(255, 105, 180, 0.5));
+        }
+
+        .hero-star {
+            position: absolute; width: clamp(2.5rem, 6vh, 4.5rem); height: auto;
+            object-fit: contain; z-index: 1; opacity: 0.9; pointer-events: none;
+        }
+
+        /* ESTRELLA REUBICADA EXACTAMENTE AL RECUADRO ROJO */
+        .star-top { top: -2%; right: 45%; animation: starRotate 9s linear infinite; }
+        .star-bottom { bottom: 8%; left: -2%; animation: starRotateReverse 9s linear infinite; }
+
+        @keyframes starRotate {
+            0% { transform: translateX(0px) rotate(0deg); }
+            50% { transform: translateX(5px) rotate(180deg); }
+            100% { transform: translateX(0px) rotate(360deg); }
+        }
+        @keyframes starRotateReverse {
+            0% { transform: translateX(0px) rotate(360deg); }
+            50% { transform: translateX(-5px) rotate(180deg); }
+            100% { transform: translateX(0px) rotate(0deg); }
+        }
+
+        .hero-text-block { display: flex; flex-direction: column; gap: clamp(0.2rem, 1vh, 0.5rem); }
+        
+        /* Clase añadida exclusivamente para el Fade de las frases */
+        .fade-text { transition: opacity 0.8s ease-in-out; opacity: 1; }
+        .fade-text.hidden { opacity: 0; }
+        
+        .hero-subtitle { font-size: clamp(1rem, 2vh, 1.25rem); font-weight: 700; color: var(--text-dark); }
+        .hero-description { font-size: clamp(0.85rem, 1.6vh, 1rem); font-weight: 500; color: var(--text-muted); max-width: 95%; line-height: 1.5; }
+
+        /* =========================================
+           NUEVO: GEMINI & BOTÓN CLICK ME
+           ========================================= */
+        .gemini-block {
+            display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .gemini-title {
+            display: flex; flex-direction: row; align-items: center; gap: 0.5rem;
+            font-size: clamp(1rem, 2vh, 1.2rem); font-weight: 700; color: var(--accent-main);
+        }
+        .gemini-title img { height: 1.5em; width: auto; object-fit: contain; flex-shrink: 0; }
+        
+        .btn-click-me {
+            position: relative; background: rgba(255, 255, 255, 0.5); border: 1px solid var(--accent-bright);
+            color: var(--accent-main); border-radius: 50px; padding: 0.3rem 1rem;
+            font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: var(--transition-smooth);
+            font-family: inherit; overflow: visible; text-transform: uppercase;
+        }
+        .btn-click-me:hover { background: var(--accent-main); color: white; box-shadow: var(--shadow-sm); }
+        
+        /* Sparkle Effects mejorado (más notorio, más tiempo opaco) */
+        .sparkle-particle {
+            position: absolute; width: 36px; height: 36px; pointer-events: none; z-index: 9999;
+            animation: sparkleFly 0.8s ease-out forwards;
+            filter: drop-shadow(0 0 6px var(--accent-bright)) brightness(1.2);
+        }
+        @keyframes sparkleFly {
+            0% { transform: translate(-50%, -50%) scale(0.5) rotate(0deg); opacity: 1; }
+            70% { opacity: 1; } /* Mantiene la forma y color vibrante casi toda la animación */
+            100% { transform: translate(var(--tx), var(--ty)) scale(1.6) rotate(90deg); opacity: 0; }
+        }
+
+        
+        /* CONTADOR DE CUMPLEAÑOS */
+
+.birthday-counter{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:10px;
+}
+
+.counter-box{
+    min-width:80px;
+    padding:12px;
+
+    background: rgba(240, 240, 240, 0.75);
+
+    border:1px solid rgba(255,105,180,0.35);
+    border-radius:18px;
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    box-shadow:
+        0 0 10px rgba(235, 8, 122, 0.3),
+        inset 0 0 10px rgba(255,182,193,0.15);
+
+    text-align:center;
+
+    transition: all 0.3s ease;
+}
+
+.counter-box:hover{
+    transform: translateY(-4px) scale(1.05);
+
+    box-shadow:
+        0 0 20px rgba(17, 17, 17, 0.5),
+        0 0 40px rgba(22, 21, 22, 0.2);
+}
+
+.counter-box span{
+    display:block;
+    font-size:1.8rem;
+    font-weight:800;
+    color:#e60d72;
+
+    text-shadow:0 0 10px rgba(199,125,255,0.5);
+}
+
+.counter-box small{
+    display:block;
+    margin-top:4px;
+
+    color:#BFA7D8;
+    font-size:0.75rem;
+
+    text-transform:uppercase;
+    letter-spacing:1px;
+}
+
+        .hero-actions { display: flex; gap: 1rem; margin-top: 0.5vh; }
+        
+        .btn-primary, .btn-secondary {
+            text-decoration: none; border-radius: 100px; font-weight: 700; font-size: clamp(0.8rem, 1.5vh, 0.9rem);
+            padding: clamp(0.6rem, 1.5vh, 0.8rem) clamp(1.5rem, 3vw, 2rem); transition: var(--transition-smooth); text-align: center; border: 2px solid transparent;
+        }
+        
+        .btn-primary { background: var(--accent-main); color: white; box-shadow: var(--shadow-md); cursor: pointer; }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); background: var(--accent-hover); }
+
+        .btn-secondary { background: rgba(15, 11, 20, 0.55); color: var(--text-dark); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); }
+        .btn-secondary:hover { background: white; color: var(--accent-hover); transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+        .hero-visuals { display: flex; justify-content: center; align-items: center; height: 100%; width: 100%; }
+
+        .v-main { 
+            width: clamp(350px, 45vw, 750px); height: auto; border-radius: 32px;
+            box-shadow: var(--shadow-lg); transition: var(--transition-smooth);
+            display: block; overflow: hidden;
+        }
+        .v-main:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); }
+
+        .v-main video { width: 100%; height: auto; display: block; border-radius: 32px; }
+
+        /* NUEVO: Firma sutil en Inicio */
+        .footer-signature {
+            position: absolute;
+            bottom: clamp(0.5rem, 2vh, 1.5rem);
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            opacity: 0.6;
+            pointer-events: none;
+            white-space: nowrap;
+            letter-spacing: 0.05em;
+        }
+
+        /* =========================================
+           8. SECCIÓN 2: MÚSICA & VIDEOS 
+           ========================================= */
+        .music-layout { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: clamp(1rem, 3vh, 2rem); width: 100%; height: 100%; padding-top: 2vh; }
+        .section-header { text-align: center; }
+        .section-title { font-family: 'Oleo Script', cursive; font-size: clamp(2.5rem, 6vh, 4rem); color: var(--accent-main); line-height: 1; text-shadow: 0 2px 10px rgba(255,255,255,0.8);}
+
+        .music-content { display: flex; flex-direction: row; align-items: center; justify-content: center; width: 100%; height: 100%; position: relative; }
+
+        .player-pro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1.5rem, 3vh, 2rem);
+    position: relative;
+    width: 100%;
+    max-width: 350px;
+    z-index: 5;
+
+}
+        .player-disc {
+            width: clamp(140px, 25vh, 220px); height: clamp(140px, 25vh, 220px);
+            border-radius: 50%; background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.4));
+            border: 1px solid var(--glass-highlight); box-shadow: var(--shadow-md), inset 0 4px 20px rgba(255,255,255,0.6);
+            display: flex; justify-content: center; align-items: center; position: relative;
+        }
+
+        .player-disc::before, .player-disc::after {
+            content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%;
+            border: 1px solid var(--accent-main); opacity: 0; transition: var(--transition-smooth);
+        }
+        .is-playing .player-disc::before { animation: soundRipple 2s linear infinite; }
+        .is-playing .player-disc::after { animation: soundRipple 2s linear infinite 1s; }
+
+        @keyframes soundRipple {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        .btn-play {
+            width: clamp(50px, 10vh, 80px); height: clamp(50px, 10vh, 80px);
+            background: var(--accent-main); border-radius: 50%; border: 4px solid white;
+            box-shadow: 0 8px 24px rgba(232, 131, 166, 0.4); display: flex; justify-content: center; align-items: center; transition: var(--transition-smooth); z-index: 10; cursor: pointer;
+        }
+        .btn-play svg { width: clamp(18px, 3vh, 28px); fill: white; margin-left: 4px; transition: var(--transition-smooth); }
+
+        .player-controls {
+    background: rgba(15, 11, 20, 0.75);
+}
+        .icon-svg { width: clamp(14px, 2.5vh, 18px); fill: var(--text-muted); }
+        .volume-slider { -webkit-appearance: none; width: 100%; height: 4px; background: var(--bg-color-2); border-radius: 2px; outline: none; }
+        .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent-main); box-shadow: 0 2px 6px rgba(232, 131, 166, 0.4); transition: transform 0.2s; cursor: pointer; }
+
+        .v-music {
+            position: absolute; height: clamp(70px, 15vh, 140px); aspect-ratio: 1 / 1;
+            background: rgba(15,11,20,0.65); border: 1px solid rgba(199,125,255,0.25);
+            border-radius: 16px; padding: 4px; box-shadow: var(--shadow-sm); transition: var(--transition-smooth);
+        }
+        .v-music video { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+
+        .pos-tl { top: -2%; left: 3%; }
+        .pos-br { bottom: -2%; right: 3%; }
+
+        /* =========================================
+           9. SECCIÓN 3: NETWORK 
+           ========================================= */
+        .network-layout { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: clamp(1rem, 3vh, 2rem); width: 100%; height: 100%; position: relative; }
+        .network-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(1rem, 2vw, 2rem); width: 100%; max-width: 900px; }
+        .network-card { background: rgba(226, 221, 221, 0.5); border: 1px solid white; border-radius: 24px; padding: clamp(0.8rem, 2vh, 1.5rem); display: flex; flex-direction: column; align-items: center; text-align: center; gap: clamp(0.2rem, 1vh, 0.5rem); transition: var(--transition-smooth); }
+        .net-avatar { width: clamp(45px, 8vh, 80px); height: clamp(45px, 8vh, 80px); border-radius: 50%; object-fit: cover; border: 3px solid white; box-shadow: var(--shadow-sm); }
+        .net-name { font-family: 'Oleo Script', cursive; font-size: clamp(1.2rem, 2.5vh, 1.5rem); color: var(--accent-main); line-height: 1; }
+
+        .network-mascot { position: absolute; bottom: 2%; right: 2%; width: clamp(80px, 15vh, 160px); z-index: 20; filter: drop-shadow(0 15px 25px rgba(232, 131, 166, 0.3)); animation: floatMascot 4s ease-in-out infinite; pointer-events: none; }
+        @keyframes floatMascot { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        /* NUEVAS CLASES PARA BOTONES DE FRIENDS */
+        .friends-list {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(1rem, 2vw, 1.5rem);
+            width: 100%; max-width: 600px; margin-top: 1vh;
+        }
+        .friend-btn {
+            min-width: 130px; font-size: clamp(0.9rem, 1.8vh, 1.1rem);
+            display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 0.5rem;
+            padding-left: 0.8rem; /* Ajuste sutil para balancear el avatar */
+        }
+        .friend-avatar {
+            width: 70px; height: 70px; /* 1️⃣ Tamaño base aumentado sin deformar */
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            flex-shrink: 0;
+            transition: transform 0.35s ease-in-out; /* Animación suave */
+        }
+        
+        .friend-avatar:hover {
+            transform: scale(2.2); /* 2️⃣ Zoom notable (+50px aprox visualmente) sin mover el resto */
+            z-index: 10;
+        }
+
+        /* 3️⃣ Estilos para la frase con efecto Fade */
+        .friends-quote {
+            width: 100%;
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: clamp(0.9rem, 1.8vh, 1.1rem);
+            font-weight: 600;
+            color: var(--text-dark);
+            opacity: 0;
+            animation: fadeInQuote 1.8s ease-in-out forwards;
+        }
+
+        @keyframes fadeInQuote {
+            0% { opacity: 0; transform: translateY(5px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+       .friend-special {
+    position: relative;
+    border: 1px solid rgba(231, 226, 226, 0.15);
+    box-shadow:
+        0 0 8px rgba(255,255,255,0.15),
+        0 0 15px rgba(199,125,255,0.25);
+}
+
+.friend-special .friend-avatar {
+    border: 2px solid #c77dff;
+    box-shadow: 0 0 12px rgba(199,125,255,0.5);
+}
+
+/* Etiqueta especial */
+.friend-special::after {
+    content: "💍 MI NOVIO";
+    position: absolute;
+    top: -8px;
+    right: -5px;
+    
+    font-size: 10px;
+    font-weight: 700;
+    
+    padding: 3px 8px;
+    border-radius: 10px;
+    
+    background: rgba(240, 8, 8, 0.9);
+    color: white;
+    
+    box-shadow: 0 0 10px rgba(199,125,255,0.4);
+}
+        /* =========================================
+           11. PHOTOS GALLERY
+           ========================================= */
+        .photo-gallery {
+            display: flex; flex-direction: row; gap: 1.5rem; width: 100%;
+            flex: 1; overflow-x: auto; overflow-y: hidden; padding: 0 1.5rem 2rem 1.5rem; align-items: center; justify-content: flex-start; /* FIX: Evita que el lado izquierdo se corte en móviles */
+            -webkit-overflow-scrolling: touch; /* NUEVO: Scroll suave nativo en iOS */
+            cursor: grab; /* Indica que se puede arrastrar */
+            
+            /* SOPORTE FIREFOX: Scrollbar rosa y fino */
+            scrollbar-width: thin; 
+            scrollbar-color: rgba(255, 105, 180, 0.5) transparent; 
+        }
+        .photo-gallery:active { cursor: grabbing; }
+
+        /* FIX BORDES CORTADOS: Mantiene el centrado visual si hay espacio, y evita el corte al hacer scroll */
+        .photo-card:first-child {
+            margin-left: auto;
+        }
+        .photo-card:last-child {
+            margin-right: auto;
+        }
+
+        /* FIX Safari/iOS: Fuerza al navegador a respetar el espacio al final del scroll */
+        .photo-gallery::after {
+            content: '';
+            min-width: 1px;
+        }
+        
+        /* Scrollbar personalizado y sutil para la galería (ahora horizontal) CHROME/SAFARI/EDGE */
+        .photo-gallery::-webkit-scrollbar { height: 6px; }
+        .photo-gallery::-webkit-scrollbar-track { background: transparent; }
+        .photo-gallery::-webkit-scrollbar-thumb { background: rgba(255, 105, 180, 0.5); border-radius: 10px; }
+
+        .photo-card {
+            flex: 0 0 auto; 
+            /* ASPECTO VERTICAL REDUCIDO PARA QUE NO SE VEAN TAN GRANDES */
+            width: clamp(160px, 40vw, 220px); 
+            height: clamp(240px, 50vh, 320px);
+            background: rgba(255, 255, 255, 0.4); border: 1px solid white;
+            border-radius: 24px; padding: 0; box-shadow: var(--shadow-sm);
+            transition: var(--transition-smooth); display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+        }
+        
+        .photo-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+        .photo-card.active {
+    transform: scale(1.05);
+    border: 2px solid #ff69b4;
+    box-shadow:
+        0 0 15px rgba(255,105,180,.8),
+        0 0 30px rgba(255,105,180,.5);
+}
+        
+        .photo-card img { 
+            width: 100%; height: 100%; 
+            object-fit: cover; /* LLENADO PERFECTO DE LA FOTO EN VERTICAL */
+            border-radius: 24px; /* BORDES REDONDEADOS VISIBLES */
+            display: block; 
+            user-select: none; -webkit-user-drag: none; /* Evita drag fantasma del navegador */
+        }
+
+        /* =========================================
+           NUEVO: REDES SOCIALES (INICIO)
+           ========================================= */
+        .social-icons {
+            display: flex; gap: 0.8rem; margin-top: 0.8rem;
+        }
+        .social-link {
+            display: flex; justify-content: center; align-items: center;
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5); border: 1px solid var(--accent-bright);
+            color: var(--accent-main); transition: var(--transition-smooth);
+            text-decoration: none;
+        }
+        .social-link svg { width: 18px; height: 18px; fill: currentColor; }
+        .social-link:hover {
+            background: var(--accent-main); color: white; transform: translateY(-3px); box-shadow: var(--shadow-md);
+        }
+
+        /* =========================================
+           12. INTRO SCREEN
+           ========================================= */
+        #intro-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; 
+            height: 100vh; height: 100dvh; /* NUEVO: Altura dinámica para que no se corte en Safari iOS */
+            z-index: 9995; /* Por debajo del cursor pero sobre todo lo demás */
+            display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+            padding-bottom: 15dvh; /* NUEVO: Respeta la barra inferior del navegador en móviles */
+            background: var(--bg-color-1);
+            transition: opacity 0.8s ease-in-out;
+        }
+        #intro-screen video {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: -1;
+        }
+        .intro-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* =========================================
+           13. ZOOM MODAL (LIGHTBOX)
+           ========================================= */
+        .zoom-modal {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            z-index: 10000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .zoom-modal.active { opacity: 1; pointer-events: auto; }
+        .zoom-modal img {
+            max-width: 90%; max-height: 90%; border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            transform: scale(0.8); transition: transform 0.3s ease;
+            object-fit: contain;
+        }
+        .zoom-modal.active img { transform: scale(1); }
+        .zoomable { cursor: pointer; }
+
+        /* Estilo específico Glass Morph Rosa para el botón de Ingreso */
+        .btn-glass-pink {
+            position: relative;
+            background: rgba(255, 182, 193, 0.25); /* Rosa translúcido */
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50px; padding: 1rem 3rem; font-size: 1.5rem;
+            font-weight: 700; color: var(--text-dark); cursor: pointer;
+            transition: var(--transition-smooth); font-family: inherit;
+            box-shadow: 0 8px 32px rgba(232, 131, 166, 0.25), inset 0 0 10px rgba(255, 255, 255, 0.3);
+            text-transform: uppercase; letter-spacing: 0.05em; z-index: 2;
+        }
+        .btn-glass-pink:hover {
+            background: rgba(255, 182, 193, 0.45); transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(232, 131, 166, 0.35), inset 0 0 15px rgba(255, 255, 255, 0.5);
+            color: var(--accent-main);
+        }
+
+        /* =========================================
+           10. RESPONSIVE DESIGN
+           ========================================= */
+        @media (max-width: 992px) {
+            .tab-content { align-items: flex-start; /* NUEVO: Evita que se corte el contenido arriba al intentar centrarlo */ }
+            
+            .hero-layout { 
+                display: flex; flex-direction: column; height: auto; min-height: 100%;
+                gap: 1.5rem; text-align: center; justify-items: center; padding-bottom: 2rem;
+            }
+            .hero-content { align-items: center; }
+            .gemini-block { align-items: center; } /* Centra el botón Gemini en móvil */
+            .hero-title-wrapper { align-items: center; }
+            .hero-visuals { width: 100%; max-width: 600px; height: auto; min-height: 20vh;}
+            
+            .music-layout, .network-layout { height: auto; min-height: 100%; justify-content: flex-start; padding-bottom: 2rem; }
+            .music-content { flex-direction: column; justify-content: center; gap: 1.5rem; }
+            .v-music.pos-tl, .v-music.pos-br { position: relative; top: auto; left: auto; bottom: auto; right: auto; height: clamp(150px, 25vh, 250px); width: 100%; max-width: 350px; }
+            
+            .network-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        }
+
+        @media (max-width: 600px) {
+            .navbar { width: 95%; border-radius: 20px; flex-wrap: wrap; justify-content: center; padding: 0.5rem; top: calc(0.5rem + 65px); }
+            .nav-link { font-size: 0.7rem; padding: 0.4rem 0.6rem; }
+            .main-glass-panel { 
+                width: 95vw; 
+                height: calc(100dvh - 160px); /* NUEVO: Se ajusta dinámicamente sin salirse de la pantalla en iOS */
+                margin-top: 1rem; 
+                padding: 0.5rem; 
+            }
+            .tab-content { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- =========================================
+         NUEVO: PANTALLA DE INTRODUCCIÓN
+         ========================================= -->
+    <div id="intro-screen">
+        <!-- EDITAR TEXTO AQUI: URL del video de fondo de la intro -->
+        <video autoplay loop muted playsinline src="video-intro.mp4"></video>
+        <!-- EDITAR TEXTO AQUI: Texto del botón de la intro -->
+        <button id="btn-enter" class="btn-glass-pink">ingresar</button>
+    </div>
+
+    <!-- VIDEO DE FONDO PRINCIPAL -->
+    <!-- EDITAR TEXTO AQUI: URL del video de fondo principal -->
+    <video id="bg-video" src="fondo-video.mp4" autoplay loop muted playsinline></video>
+
+    <!-- AMBIENTE -->
+    <div class="ambient-background"></div>
+    <div class="clouds-container">
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
+    </div>
+    <canvas id="particles-canvas"></canvas>
+    <canvas id="cursor-canvas"></canvas>
+
+    <!-- EDITAR TEXTO AQUI: URL del audio de fondo -->
+    <audio id="audio-player" loop preload="auto">
+        <source src="musica1.mp3" type="audio/mpeg">
+    </audio>
+
+    <nav class="navbar">
+        <!-- EDITAR TEXTO AQUI: Textos del menú de navegación superior -->
+        <button class="nav-link logo-btn" data-target="tab-hero">XGATOV😼</button><!-- EDITAR TEXTO AQUI: Textos del menú de navegación superior -->
+        <button class="nav-link active" data-target="tab-hero">Inicio</button>
+        <button class="nav-link" data-target="tab-music">Música</button>
+        <button class="nav-link" data-target="tab-network">Friends</button>
+        <button class="nav-link" data-target="tab-photos">Photos</button>
+        
+    </nav>
+
+    <main class="main-glass-panel">
+        
+        <!-- PESTAÑA 1: HERO -->
+        <div class="tab-content active" id="tab-hero">
+            <div class="hero-layout">
+                <div class="hero-content">
+                    <div class="status-container">
+                        <div class="avatar-mini">
+                            <!-- EDITAR TEXTO AQUI: Avatar del status container -->
+                            <img src="avatar-estado.gif" alt="Avatar" onerror="this.src='default-avatar.jpg'">
+                        </div>
+                        <div class="status-info">
+                            <span class="status-dot"></span>
+                            <!-- EDITAR TEXTO AQUI: Estado en línea de la etiqueta superior -->
+                            <span class="status-text">En línea</span>
+                            <span class="status-year">.*Sweet (30102021)</span>
+                        </div>
+                    </div>
+
+                    <div class="hero-title-wrapper">
+                        <h1 class="hero-title">
+                            <!-- EDITAR TEXTO AQUI: Título imagen GOMI -->
+                            <img src="texto-sweet.png" alt="Gomi" class="hero-text-img-gomi">
+                        </h1>
+                        <!-- EDITAR TEXTO AQUI: Imágenes de estrellas animadas -->
+                        <img src="" alt="Estrella" class="hero-star star-top">
+                        <img src="" alt="Estrella" class="hero-star star-bottom">
+                    </div>
+                    <div class="hero-text-block">
+                        <div id="quote-content" class="fade-text">
+                            <!-- NOTA: Las frases de este fade se editan en el JS de abajo, no aquí -->
+                            <p class="hero-subtitle" id="quote-title">Solo quiero que lo intentes, que me quieras como si fuera la 1era vez.</p>
+                            <p class="hero-description" id="quote-desc"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Apartado GEMINI -->
+                    <div class="gemini-block">
+                        <div class="gemini-title">
+                            <!-- EDITAR TEXTO AQUI: Texto de Gemini -->
+                            <span>VIRGO</span>
+                            <!-- EDITAR TEXTO AQUI: Ícono Gemini -->
+                            <img src="virgo-incon.png" alt="Virgo Icon">
+
+                        </div>
+                    </div>
+                        
+                    
+                </div>
+
+                <div class="hero-visuals" style="flex-direction: column; gap: 1.5rem;">
+                    <div class="v-main js-parallax" data-depth="0.05">
+                        <!-- EDITAR TEXTO AQUI: Video principal de inicio -->
+                        <video src="video interior.mp4" autoplay loop muted playsinline></video>
+                    </div>
+                    
+                    <!-- NUEVO: Reloj en tiempo real -->
+                    <div class="birthday-title">
+    🎂  Se acerca mi cumpleaños - "19 de septiembre" 🎉
+</div>
+
+<div class="birthday-counter">
+
+    <div class="counter-box">
+        <span id="days">00</span>
+        <small>Días</small>
+    </div>
+
+    <div class="counter-box">
+        <span id="hours">00</span>
+        <small>Horas</small>
+    </div>
+
+    <div class="counter-box">
+        <span id="minutes">00</span>
+        <small>Min</small>
+    </div>
+
+    <div class="counter-box">
+        <span id="seconds">00</span>
+        <small>Seg</small>
+    </div>
+
+</div>
+            
+            <!-- NUEVO: Firma sutil -->
+            <div class="footer-signature">©2026 Gato Volador</div>
+        </div>
+        </div> <!-- hero-visuals -->
+</div> <!-- hero-layout -->
+</div><!-- tab-hero -->
+
+        <!-- PESTAÑA 2: MÚSICA -->
+        <div class="tab-content" id="tab-music">
+            <div class="music-layout">
+                <div class="section-header">
+                    <!-- EDITAR TEXTO AQUI: Título y descripción de la sección Música -->
+                    <h2 class="section-title">MI Musica</h2>
+                    <p class="hero-description" style="margin: 0 auto;"> BONITA - SWEET </p>
+                </div>
+                
+                <div class="music-content">
+                    <div class="v-music pos-tl js-parallax" data-depth="0.08">
+                        <!-- EDITAR TEXTO AQUI: Video pequeño izquierdo de Música -->
+                        <img src="gif1.gif" autoplay loop muted playsinline></img>
+                    </div>
+
+                    <div class="player-pro" id="music-ui">
+                        <div class="player-disc js-parallax" data-depth="0.05">
+                            <div class="btn-play" id="btn-play-pause">
+                                <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                <svg id="icon-pause" viewBox="0 0 24 24" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                            </div>
+                        </div>
+
+                        <div class="player-controls">
+                            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+                            <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.01" value="0.3">
+                            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                        </div>
+                    </div>
+
+                 </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 3: NETWORK -->
+        <div class="tab-content" id="tab-network">
+            <div class="network-layout">
+                <div class="section-header">
+                    <!-- EDITAR TEXTO AQUI: Título y descripción de la sección Friends -->
+                     
+<img src="amigos-avatar-principal.webp" 
+     alt="Avatar" 
+     class="friend-avatar"
+     style="width:50px; height:auto; border: none; box-shadow: none;">
+                    
+                    <div style="text-align: center;">
+                        <h2 class="section-title">MIS AMIGOS</h2>
+                        <p class="hero-description" style="margin: 0 auto;">♥.</p>
+                    </div>
+                </div>
+
+                <div class="friends-list">
+                    <!-- EDITAR TEXTO AQUI: Botones de amigos (Puedes cambiar el src de img por sus avatares reales) -->
+                    <a href="xat.me/iStark1926" target="_blank" class="btn-secondary friend-btn friend-special">
+                        <img src="avatar1.png" alt="Avatar" class="friend-avatar">
+                        iStark (1926)
+                    </a>
+
+                    <a href="xat.me/ojitos0102" target="_blank" class="btn-secondary friend-btn">
+                        <img src="avatar-ojitos.jpg" alt="Avatar" class="friend-avatar">
+                        OJITOS
+                    </a>
+
+                         <a href="xat.me/iGriss" target="_blank" class="btn-secondary friend-btn">
+                        <img src="avatar-igris.png" alt="Avatar" class="friend-avatar">
+                         iGriss
+                    </a>
+                        
+                    </a>
+                        <a href="xat.me/RommmmmRey" target="_blank" class="btn-secondary friend-btn">
+                        <img src="avatar-rom.jpg" alt="Avatar" class="friend-avatar">
+                        Rommmmmrey
+                    </a>
+                        <a href="xat.me/aCidito" target="_blank" class="btn-secondary friend-btn">
+                        <img src="avatar-acidito.png" alt="Avatar" class="friend-avatar">
+                        Acidito
+
+                     </a>
+                    <a href="https://xat.me/xgatov" target="_blank" class="btn-secondary friend-btn">
+                        <img src="avatar-gato.jpg" alt="Avatar" class="friend-avatar">
+                        GATO VOLADOR
+                    </a>
+                </div>
+                
+                <!-- 3️⃣ Quote debajo con efecto Fade -->
+                <p class="friends-quote"></p>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 4: PHOTOS -->
+        <div class="tab-content" id="tab-photos" style="align-items: flex-start;">
+            <div class="network-layout" style="justify-content: flex-start; height: auto; min-height: 100%; padding-top: 5vh; padding-bottom: 8vh;">
+                <div class="section-header">
+                    <!-- EDITAR TEXTO AQUI: Título y descripción de la sección Photos -->
+                    <h2 class="section-title" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        Photos
+                        <!-- EDITAR IMAGEN AQUI: Reemplaza el src con la URL de tu imagen decorativa -->
+                        <img src="decoracion-photos.png" alt="Decor" style="height: 0.9em; width: auto; object-fit: contain; flex-shrink: 0;">
+                    </h2>
+                    <p class="hero-description" style="margin: 0 auto; margin-bottom: 0.5rem;"></p>
+                    
+                    <!-- NUEVO: Indicador de deslizar -->
+                    <div style="font-size: 0.85rem; color: var(--accent-main); display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; opacity: 0.8; margin-bottom: 1rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/><path d="m12 19-7-7 7-7"/></svg>
+                        Desliza para ver más
+                    </div>
+                </div>
+                
+                <div class="photo-gallery">
+                    <div class="photo-card">
+                        <img src="galeria-foto1.png" alt="Gallery Photo 1">
+                    </div>
+                    <div class="photo-card">
+                        <img src="galeria-foto2.png" alt="Gallery Photo 2">
+                    </div>
+                    <div class="photo-card">
+                        <img src="galeria-foto3.png" alt="Gallery Photo 3">
+                    </div>
+                    <div class="photo-card">
+                        <img src="galeria-foto4.png" alt="Gallery Photo 4">
+                    </div>
+                    <div class="photo-card">
+                        <img src="galeria-foto5.png" alt="Gallery Photo 5">
+                    </div>
+
+                    <!-- =================================================================================
+                         AGREGAR MÁS FOTOS AQUÍ
+                         Para agregar una nueva foto a la galería, copia uno de los bloques 
+                         <div class="photo-card">...</div> de arriba y pégalo justo antes de este comentario.
+                         Luego simplemente cambia el src por el nombre exacto de tu nueva foto en GitHub.
+                         ================================================================================= -->
+                </div>
+                
+            </div>
+        </div>
+
+       
+    </main>
+
+    <!-- NUEVO: Modal para Zoom de Fotos -->
+    <div id="zoom-modal" class="zoom-modal">
+        <img id="zoom-img" src="" alt="Zoomed">
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const canvas = document.getElementById('particles-canvas');
+            const ctx = canvas.getContext('2d');
+            const cursorCanvas = document.getElementById('cursor-canvas');
+            const cursorCtx = cursorCanvas.getContext('2d');
+            let particles = [];
+            let cursorParticles = []; // Partículas del cursor
+            
+            let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+
+            // --- 0. CUSTOM CURSOR & EMITTER ---
+            if (window.matchMedia("(pointer: fine)").matches) {
+                const cursor = document.createElement('div');
+                cursor.classList.add('custom-cursor');
+                const trail = document.createElement('div');
+                trail.classList.add('cursor-trail');
+                document.body.appendChild(cursor);
+                document.body.appendChild(trail);
+                
+                let trailX = mouseX, trailY = mouseY;
+                
+                window.addEventListener('mousemove', e => {
+                    mouseX = e.clientX; mouseY = e.clientY;
+                    cursor.style.left = mouseX + 'px';
+                    cursor.style.top = mouseY + 'px';
+                    
+                    // Generar 1-2 partículas por movimiento
+                    for(let i=0; i<2; i++) {
+                        cursorParticles.push(new CursorStar(mouseX, mouseY));
+                    }
+                });
+                
+                const renderTrail = () => {
+                    trailX += (mouseX - trailX) * 0.2;
+                    trailY += (mouseY - trailY) * 0.2;
+                    trail.style.left = trailX + 'px';
+                    trail.style.top = trailY + 'px';
+                    requestAnimationFrame(renderTrail);
+                };
+                renderTrail();
+                
+                window.addEventListener('mousedown', () => cursor.classList.add('click'));
+                window.addEventListener('mouseup', () => cursor.classList.remove('click'));
+            }
+
+            // --- 1. TABS ---
+            const navLinks = document.querySelectorAll('.nav-link');
+            const tabs = document.querySelectorAll('.tab-content');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('data-target');
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    tabs.forEach(t => t.classList.remove('active'));
+                    link.classList.add('active');
+                    document.getElementById(targetId).classList.add('active');
+                });
+            });
+
+            // --- 2. AUDIO PLAYER ---
+            const audio = document.getElementById('audio-player');
+            const btnPlayPause = document.getElementById('btn-play-pause');
+            const iconPlay = document.getElementById('icon-play');
+            const iconPause = document.getElementById('icon-pause');
+            const volumeSlider = document.getElementById('volume-slider');
+            const musicUI = document.getElementById('music-ui');
+            let isPlaying = false;
+            audio.volume = volumeSlider.value;
+            btnPlayPause.addEventListener('click', () => {
+                if (isPlaying) {
+                    audio.pause();
+                    iconPlay.style.display = 'block';
+                    iconPause.style.display = 'none';
+                    musicUI.classList.remove('is-playing');
+                } else {
+                    audio.play().catch(e => console.log("Auto-play prevented"));
+                    iconPlay.style.display = 'none';
+                    iconPause.style.display = 'block';
+                    musicUI.classList.add('is-playing');
+                }
+                isPlaying = !isPlaying;
+            });
+            volumeSlider.addEventListener('input', (e) => audio.volume = e.target.value);
+
+            // --- 3. LOGICA PANTALLA INTRODUCCION ---
+            const introScreen = document.getElementById('intro-screen');
+            const btnEnter = document.getElementById('btn-enter');
+            
+            if (btnEnter && introScreen) {
+                btnEnter.addEventListener('click', () => {
+                    // Ocultar pantalla
+                    introScreen.classList.add('intro-hidden');
+                    setTimeout(() => {
+                        introScreen.style.display = 'none';
+                    }, 800);
+                    
+                    // Activar autoplay de la música
+                    if (!isPlaying) {
+                        audio.play().then(() => {
+                            iconPlay.style.display = 'none';
+                            iconPause.style.display = 'block';
+                            musicUI.classList.add('is-playing');
+                            isPlaying = true;
+                        }).catch(e => console.log("Autoplay bloqueado:", e));
+                    }
+                });
+            }
+
+            // --- 4. PARALLAX ---
+            let pCurrentX = 0, pCurrentY = 0;
+            const pLerp = (start, end, factor) => start + (end - start) * factor;
+            const renderParallax = () => {
+                pCurrentX = pLerp(pCurrentX, (mouseX / window.innerWidth - 0.5) * 2, 0.05);
+                pCurrentY = pLerp(pCurrentY, (mouseY / window.innerHeight - 0.5) * 2, 0.05);
+                const activeElements = document.querySelectorAll('.tab-content.active .js-parallax');
+                activeElements.forEach(el => {
+                    const depth = parseFloat(el.getAttribute('data-depth')) || 0.1;
+                    el.style.transform = `translate3d(${pCurrentX * depth * 150}px, ${pCurrentY * depth * 150}px, 0)`;
+                });
+                requestAnimationFrame(renderParallax);
+            };
+            if (window.matchMedia("(hover: hover)").matches) renderParallax();
+
+            // --- 5. PARTICLES ENGINE ---
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                cursorCanvas.width = window.innerWidth;
+                cursorCanvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            const particleColors = ['#FFFFFF', '#FFB6C1', '#FF69B4'];
+            const shapes = ['✦', '✧', '⋆'];
+
+            // Background Stars
+            class Particle {
+                constructor() { this.reset(); this.y = Math.random() * canvas.height; }
+                reset() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height + 20;
+                    this.size = Math.random() * 3 + 1.5;
+                    this.speedY = Math.random() * 0.4 + 0.1; 
+                    this.speedX = (Math.random() - 0.5) * 0.2;
+                    this.color = particleColors[Math.floor(Math.random() * particleColors.length)];
+                    this.shape = shapes[Math.floor(Math.random() * shapes.length)];
+                    this.opacity = Math.random() * 0.5 + 0.2;
+                }
+                update() {
+                    this.y -= this.speedY; this.x += this.speedX;
+                    this.x -= pCurrentX * this.size * 0.5;
+                    this.y -= pCurrentY * this.size * 0.5;
+                    if (this.y < -30) this.reset();
+                }
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = this.opacity;
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 8; ctx.shadowColor = this.color;
+                    ctx.font = `${this.size * 5}px Arial`;
+                    ctx.fillText(this.shape, this.x, this.y);
+                    ctx.restore();
+                }
+            }
+
+            // Cursor Particle (Stars being thrown)
+            class CursorStar {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.size = Math.random() * 2 + 2;
+                    this.vx = (Math.random() - 0.5) * 2.5;
+                    this.vy = (Math.random() - 0.5) * 2.5;
+                    this.life = 1.0;
+                    this.decay = Math.random() * 0.02 + 0.01;
+                    this.color = particleColors[Math.floor(Math.random() * particleColors.length)];
+                    this.shape = shapes[Math.floor(Math.random() * shapes.length)];
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.life -= this.decay;
+                }
+                draw() {
+                    if(this.life <= 0) return;
+                    cursorCtx.save();
+                    cursorCtx.globalAlpha = this.life;
+                    cursorCtx.fillStyle = this.color;
+                    cursorCtx.shadowBlur = 10;
+                    cursorCtx.shadowColor = this.color;
+                    cursorCtx.font = `${this.size * 6}px Arial`;
+                    cursorCtx.fillText(this.shape, this.x, this.y);
+                    cursorCtx.restore();
+                }
+            }
+
+            const particleCount = window.innerWidth < 768 ? 20 : 50;
+            for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                cursorCtx.clearRect(0, 0, cursorCanvas.width, cursorCanvas.height);
+                
+                // Fondo
+                particles.forEach(p => { p.update(); p.draw(); });
+                
+                // Estela del cursor
+                for (let i = 0; i < cursorParticles.length; i++) {
+                    cursorParticles[i].update();
+                    cursorParticles[i].draw();
+                    if (cursorParticles[i].life <= 0) {
+                        cursorParticles.splice(i, 1);
+                        i--;
+                    }
+                }
+                
+                requestAnimationFrame(animate);
+            }
+            animate();
+
+            // --- 6. QUOTES SYSTEM (FADE IN/OUT) ---
+            // EDITAR TEXTO AQUI: Las frases que se alternan con efecto FADE
+        const heroQuotes = [
+    { title: "🩷una reyna donde balla.🩷", desc: "" },
+    { title: "La sinceridad es el reflejo de un corazón transparente; genera confianza y fortalece cada relación..", desc: "" },
+    { title: "La amistad es un tesoro que se construye con respeto, apoyo y momentos compartidos a lo largo del tiempo.", desc: "" } // ← añadida
+];
+
+let currentQuote = 0;
+const quoteContent = document.getElementById('quote-content');
+const quoteTitle = document.getElementById('quote-title');
+const quoteDesc = document.getElementById('quote-desc');
+
+if (quoteContent) {
+    setInterval(() => {
+        quoteContent.classList.add('hidden');
+        setTimeout(() => {
+            currentQuote = (currentQuote + 1) % heroQuotes.length;
+            quoteTitle.textContent = heroQuotes[currentQuote].title;
+            quoteDesc.textContent = heroQuotes[currentQuote].desc;
+            quoteContent.classList.remove('hidden');
+        }, 800); 
+    }, 5000); 
+}
+
+            // --- 7. SPARKLE EFFECT BOTÓN CLICK ME ---
+            const clickMeButtons = document.querySelectorAll('.btn-click-me');
+            if (clickMeButtons.length > 0) {
+                clickMeButtons.forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        // Genera 6 destellos por cada click
+                        for(let i = 0; i < 6; i++) {
+                            const sparkle = document.createElement('img');
+                            
+                            // ====================================================================
+                            // NOMBRAR EFECTO AQUÍ: El archivo del destello debe llamarse exactamente:
+                            // sparkle.png
+                            // Súbelo a la raíz de tu GitHub con ese nombre exacto.
+                            // ====================================================================
+                            sparkle.src = 'sparkle.png';
+                            sparkle.className = 'sparkle-particle';
+                            
+                            // Generar trayectoria circular aleatoria
+                            const angle = Math.random() * Math.PI * 2;
+                            const distance = Math.random() * 30 + 25; // 25 a 55 px
+                            const tx = Math.cos(angle) * distance + 'px';
+                            const ty = Math.sin(angle) * distance + 'px';
+                            
+                            sparkle.style.setProperty('--tx', tx);
+                            sparkle.style.setProperty('--ty', ty);
+                            
+                            // Iniciar desde el centro del botón
+                            sparkle.style.left = '50%';
+                            sparkle.style.top = '50%';
+                            
+                            this.appendChild(sparkle);
+                            
+                            // Eliminar partícula después de la animación (tiempo prolongado para notarse más)
+                            setTimeout(() => sparkle.remove(), 800);
+                        }
+                    });
+                });
+            }
+
+            // --- 8. ZOOM MODAL LOGIC ---
+            const zoomModal = document.getElementById('zoom-modal');
+            const zoomImg = document.getElementById('zoom-img');
+            // Ajuste: Se eliminó .avatar-mini img para que no abra el modal
+            const zoomableImages = document.querySelectorAll('.photo-card img');
+
+            zoomableImages.forEach(img => {
+                img.classList.add('zoomable');
+                img.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Evitar que otros clicks interfieran
+                    zoomImg.src = img.src;
+                    zoomModal.classList.add('active');
+                });
+            });
+
+            if (zoomModal) {
+                zoomModal.addEventListener('click', () => {
+                    zoomModal.classList.remove('active');
+                });
+            }
+
+            // --- 11. DRAG TO SCROLL (FOTOS) ---
+            const photoGallery = document.querySelector('.photo-gallery');
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            if (photoGallery) {
+                photoGallery.addEventListener('mousedown', (e) => {
+                    isDown = true;
+                    startX = e.pageX - photoGallery.offsetLeft;
+                    scrollLeft = photoGallery.scrollLeft;
+                });
+                photoGallery.addEventListener('mouseleave', () => {
+                    isDown = false;
+                });
+                photoGallery.addEventListener('mouseup', () => {
+                    isDown = false;
+                });
+                photoGallery.addEventListener('mousemove', (e) => {
+                    if (!isDown) return;
+                    e.preventDefault();
+                    const x = e.pageX - photoGallery.offsetLeft;
+                    const walk = (x - startX) * 2; // Velocidad de arrastre
+                    photoGallery.scrollLeft = scrollLeft - walk;
+                });
+            }
+            // --- CONTADOR PARA MI CUMPLEAÑOS ---
+function updateBirthdayCountdown() {
+
+    const now = new Date();
+
+    let birthday = new Date(
+        now.getFullYear(),
+        8,
+        19,
+        0,
+        0,
+        0
+    );
+
+    if (now > birthday) {
+        birthday = new Date(
+            now.getFullYear() + 1,
+            8,
+            19,
+            0,
+            0,
+            0
+        );
+    }
+
+    const diff = birthday - now;
+
+    document.getElementById("days").textContent =
+        Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    document.getElementById("hours").textContent =
+        Math.floor((diff / (1000 * 60 * 60)) % 24);
+
+    document.getElementById("minutes").textContent =
+        Math.floor((diff / (1000 * 60)) % 60);
+
+    document.getElementById("seconds").textContent =
+        Math.floor((diff / 1000) % 60);
+}
+
+updateBirthdayCountdown();
+setInterval(updateBirthdayCountdown, 1000);
+
+        });
+
+        // --- 9. PROTECCIÓN BÁSICA FRONTEND ---
+        // Bloquear clic derecho (menú contextual)
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // Bloquear teclas de herramientas de desarrollador y código fuente
+        document.addEventListener('keydown', function(e) {
+            // Bloquear F12
+            if (e.key === 'F12' || e.keyCode === 123) {
+                e.preventDefault();
+            }
+            // Bloquear Ctrl+Shift+I (Windows/Linux) o Cmd+Option+I (Mac)
+            if ((e.ctrlKey || e.metaKey) && (e.shiftKey || e.altKey) && (e.key.toLowerCase() === 'i' || e.keyCode === 73)) {
+                e.preventDefault();
+            }
+            // Bloquear Ctrl+Shift+C (Windows/Linux) o Cmd+Option+C (Mac)
+            if ((e.ctrlKey || e.metaKey) && (e.shiftKey || e.altKey) && (e.key.toLowerCase() === 'c' || e.keyCode === 67)) {
+                e.preventDefault();
+            }
+            // Bloquear Ctrl+Shift+J (Windows/Linux) o Cmd+Option+J (Mac)
+            if ((e.ctrlKey || e.metaKey) && (e.shiftKey || e.altKey) && (e.key.toLowerCase() === 'j' || e.keyCode === 74)) {
+                e.preventDefault();
+            }
+            // Bloquear Ctrl+U (Windows/Linux) o Cmd+Option+U (Mac)
+            if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'u' || e.keyCode === 85)) {
+                e.preventDefault();
+            }
+        });
+    </script>
+    <script>
+const gallery = document.querySelector('.photo-gallery');
+
+let posicion = 0;
+
+setInterval(() => {
+
+    posicion += 250;
+
+    if (posicion >= gallery.scrollWidth - gallery.clientWidth) {
+        posicion = 0;
+    }
+
+    gallery.scrollTo({
+        left: posicion,
+        behavior: 'smooth'
+    });
+
+}, 3000);
+</script>
+
+<script>
+document.querySelectorAll('.photo-card').forEach(card => {
+
+    card.addEventListener('click', () => {
+
+        document.querySelectorAll('.photo-card').forEach(c => {
+            c.classList.remove('active');
+        });
+
+        card.classList.add('active');
+
+    });
+
+});
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
