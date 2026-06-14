@@ -1084,7 +1084,8 @@
             const volumeSlider = document.getElementById('volume-slider');
             const musicUI = document.getElementById('music-ui');
             let isPlaying = false;
-            audio.volume = volumeSlider.value;
+            audio.volume = 1;
+volumeSlider.value = 1;
             btnPlayPause.addEventListener('click', () => {
                 if (isPlaying) {
                     audio.pause();
@@ -1424,25 +1425,8 @@ setInterval(updateBirthdayCountdown, 1000);
             }
         });
     </script>
-    <script>
-const gallery = document.querySelector('.photo-gallery');
-
-let posicion = 0;
-
-setInterval(() => {
-
-    posicion += 250;
-
-    if (posicion >= gallery.scrollWidth - gallery.clientWidth) {
-        posicion = 0;
-    }
-
-    gallery.scrollTo({
-        left: posicion,
-        behavior: 'smooth'
-    });
-
-}, 3000);
+   
+</script>
 </script>
 
 <script>
@@ -1460,7 +1444,54 @@ document.querySelectorAll('.photo-card').forEach(card => {
 
 });
 </script>
+<script>
 
+const gallery =
+document.querySelector(".photo-gallery");
+
+if(gallery){
+
+let speed = 1;
+
+function autoScroll(){
+
+gallery.scrollLeft += speed;
+
+if(
+gallery.scrollLeft >=
+gallery.scrollWidth -
+gallery.clientWidth
+){
+
+gallery.scrollLeft = 0;
+
+}
+
+}
+
+setInterval(
+autoScroll,
+20
+);
+
+gallery.addEventListener(
+"mouseenter",
+()=>{
+speed = 0;
+}
+);
+
+gallery.addEventListener(
+"mouseleave",
+()=>{
+speed = 1;
+}
+);
+
+}
+
+</script>
+</script>
 </body>
 </html>
 
