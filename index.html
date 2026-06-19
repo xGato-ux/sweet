@@ -499,13 +499,33 @@
             width: 100%; max-width: 600px; margin-top: 1vh;
         }
         .friend-btn {
-            min-width: 130px; font-size: clamp(0.9rem, 1.8vh, 1.1rem);
-            display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 0.5rem;
-            padding-left: 0.8rem; /* Ajuste sutil para balancear el avatar */
-        }
+    min-width: 180px;
+    font-size: clamp(0.9rem, 1.8vh, 1.1rem);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+
+    padding: 12px 16px;
+
+    background: rgba(255, 182, 193, 0.18);
+    border: 2px solid rgba(255, 182, 193, 0.4);
+
+    border-radius: 18px;
+
+    box-shadow: 0 8px 20px rgba(255, 105, 180, 0.15); 
+                inset 0 0 0 1px rgba(255,255,255,0.35);
+
+    backdrop-filter: blur(8px);
+
+    transition: all 0.3s ease;
+}
+    
         .friend-avatar {
-            width: 70px; height: 70px; /* 1️⃣ Tamaño base aumentado sin deformar */
-            border-radius: 50%;
+            width: 100px; height: 100px; /* 1️⃣ Tamaño base aumentado sin deformar */
+            border-radius: 6%;
             object-fit: cover;
             border: 2px solid rgba(255, 255, 255, 0.8);
             flex-shrink: 0;
@@ -925,32 +945,32 @@
 
                 <div class="friends-list">
                     <!-- EDITAR TEXTO AQUI: Botones de amigos (Puedes cambiar el src de img por sus avatares reales) -->
-                    <a href="xat.me/iStark1926" target="_blank" class="btn-secondary friend-btn friend-special">
+                    <a href="http://xat.me/iStark1926" target="_blank" class="btn-secondary friend-btn friend-special">
                         <img src="avatar1.png" alt="Avatar" class="friend-avatar">
                         iStark (1926)
                     </a>
 
-                    <a href="xat.me/ojitos0102" target="_blank" class="btn-secondary friend-btn">
+                    <a href="http://xat.me/ojitos0102" target="_blank" class="btn-secondary friend-btn">
                         <img src="avatar-ojitos.jpg" alt="Avatar" class="friend-avatar">
                         OJITOS
                     </a>
 
-                         <a href="xat.me/iGriss" target="_blank" class="btn-secondary friend-btn">
+                         <a href="http://xat.me/iGriss" target="_blank" class="btn-secondary friend-btn">
                         <img src="avatar-igris.png" alt="Avatar" class="friend-avatar">
                          iGriss
                     </a>
                         
                     </a>
-                        <a href="xat.me/RommmmmRey" target="_blank" class="btn-secondary friend-btn">
+                        <a href="http://xat.me/RommmmmRey" target="_blank" class="btn-secondary friend-btn">
                         <img src="avatar-rom.jpg" alt="Avatar" class="friend-avatar">
                         Rommmmmrey
                     </a>
-                        <a href="xat.me/aCidito" target="_blank" class="btn-secondary friend-btn">
+                        <a href="http://xat.me/aCidito" target="_blank" class="btn-secondary friend-btn">
                         <img src="avatar-acidito.png" alt="Avatar" class="friend-avatar">
                         Acidito
 
                      </a>
-                    <a href="https://xat.me/xgatov" target="_blank" class="btn-secondary friend-btn">
+                    <a href="http://xat.me/xgatov" target="_blank" class="btn-secondary friend-btn">
                         <img src="avatar-gato.jpg" alt="Avatar" class="friend-avatar">
                         GATO VOLADOR
                     </a>
