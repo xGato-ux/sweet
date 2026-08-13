@@ -705,23 +705,372 @@
         .zoom-modal.active img { transform: scale(1); }
         .zoomable { cursor: pointer; }
 
-        /* Estilo específico Glass Morph Rosa para el botón de Ingreso */
-        .btn-glass-pink {
-            position: relative;
-            background: rgba(255, 182, 193, 0.25); /* Rosa translúcido */
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            border-radius: 50px; padding: 1rem 3rem; font-size: 1.5rem;
-            font-weight: 700; color: var(--text-dark); cursor: pointer;
-            transition: var(--transition-smooth); font-family: inherit;
-            box-shadow: 0 8px 32px rgba(232, 131, 166, 0.25), inset 0 0 10px rgba(255, 255, 255, 0.3);
-            text-transform: uppercase; letter-spacing: 0.05em; z-index: 2;
-        }
-        .btn-glass-pink:hover {
-            background: rgba(255, 182, 193, 0.45); transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 12px 40px rgba(232, 131, 166, 0.35), inset 0 0 15px rgba(255, 255, 255, 0.5);
-            color: var(--accent-main);
-        }
+        /* =========================================
+   BOTÓN INGRESAR - GLASS NEÓN ROSA
+   ========================================= */
+
+.btn-glass-pink {
+    position: relative;
+    overflow: visible;
+
+    padding: 1rem 3rem;
+
+    /* Cristal */
+    background: rgba(255, 182, 193, 0.20);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    /* Borde */
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 50px;
+
+    /* Texto */
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+
+    cursor: pointer;
+    z-index: 2;
+
+    /* Brillo inicial */
+    box-shadow:
+        0 0 8px rgba(255, 105, 180, 0.55),
+        0 0 20px rgba(255, 105, 180, 0.40),
+        0 8px 32px rgba(232, 131, 166, 0.25),
+        inset 0 0 12px rgba(255, 255, 255, 0.25);
+
+    transition:
+        transform 0.35s ease,
+        background 0.35s ease,
+        box-shadow 0.35s ease,
+        border-color 0.35s ease;
+
+    /* Pulso suave */
+    animation: ingresarPulso 2.5s ease-in-out infinite;
+}
+
+
+/* =========================================
+   ✨ BRILLO QUE RECORRE EL BOTÓN
+   ========================================= */
+
+.btn-glass-pink::before {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    left: -120%;
+
+    width: 70%;
+    height: 100%;
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.55),
+        transparent
+    );
+
+    transform: skewX(-25deg);
+
+    animation: ingresarBrillo 3.5s ease-in-out infinite;
+
+    pointer-events: none;
+}
+
+
+/* =========================================
+   ✨ PEQUEÑO BRILLO INTERIOR
+   ========================================= */
+
+.btn-glass-pink::after {
+    content: "";
+
+    position: absolute;
+    inset: 2px;
+
+    border-radius: 50px;
+
+    border: 1px solid rgba(255, 255, 255, 0.18);
+
+    box-shadow:
+        inset 0 1px 4px rgba(255, 255, 255, 0.35);
+
+    pointer-events: none;
+}
+
+
+/* =========================================
+   🖱️ EFECTO AL PASAR EL MOUSE
+   ========================================= */
+
+.btn-glass-pink:hover {
+    transform: translateY(-5px) scale(1.06);
+
+    background: rgba(255, 105, 180, 0.35);
+
+    border-color: rgba(255, 255, 255, 0.95);
+
+    color: #ffffff;
+
+    box-shadow:
+        0 0 12px rgba(255, 105, 180, 0.95),
+        0 0 30px rgba(255, 105, 180, 0.80),
+        0 0 55px rgba(255, 105, 180, 0.55),
+        0 15px 45px rgba(232, 131, 166, 0.35),
+        inset 0 0 20px rgba(255, 255, 255, 0.30);
+
+    animation: ninguna;
+}
+
+
+/* =========================================
+   💥 EFECTO AL HACER CLIC
+   ========================================= */
+
+.btn-glass-pink:active {
+    transform: translateY(-1px) scale(0.95);
+
+    box-shadow:
+        0 0 10px rgba(255, 105, 180, 0.8),
+        0 0 20px rgba(255, 105, 180, 0.5),
+        inset 0 0 15px rgba(0, 0, 0, 0.18);
+}
+
+
+/* =========================================
+   💗 PULSO DEL BOTÓN
+   ========================================= */
+
+@keyframes ingresarPulso {
+
+    0%,
+    100% {
+        box-shadow:
+            0 0 8px rgba(255, 105, 180, 0.55),
+            0 0 20px rgba(255, 105, 180, 0.40),
+            0 8px 32px rgba(232, 131, 166, 0.25),
+            inset 0 0 12px rgba(255, 255, 255, 0.25);
+    }
+
+    50% {
+        box-shadow:
+            0 0 12px rgba(255, 105, 180, 0.85),
+            0 0 30px rgba(255, 105, 180, 0.65),
+            0 0 50px rgba(255, 105, 180, 0.35),
+            0 8px 32px rgba(232, 131, 166, 0.30),
+            inset 0 0 16px rgba(255, 255, 255, 0.30);
+    }
+}
+
+
+/* =========================================
+   ✨ ANIMACIÓN DEL DESTELLO
+   ========================================= */
+
+@keyframes ingresarBrillo {
+
+    0% {
+        left: -120%;
+    }
+
+    35% {
+        left: 130%;
+    }
+
+    100% {
+        left: 130%;
+    }
+}
+
+
+/* =========================================
+   💗 CORAZONES DEL BOTÓN INGRESAR
+   ========================================= */
+
+.corazones-ingresar {
+    position: absolute;
+    inset: -100px;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: visible;
+}
+
+/* Cada corazón */
+.corazon-ingresar {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+
+    font-size: 22px;
+    color: #ff69b4;
+
+    filter:
+        drop-shadow(0 0 5px rgba(255, 105, 180, 0.9))
+        drop-shadow(0 0 12px rgba(255, 105, 180, 0.6));
+
+    opacity: 0;
+
+    transform:
+        translate(-50%, -50%)
+        scale(0);
+
+    animation:
+        corazonAcumular 1.8s ease-out forwards;
+}
+
+/* 💗 Acumulación */
+@keyframes corazonAcumular {
+
+    0% {
+        opacity: 0;
+        transform:
+            translate(-50%, -50%)
+            scale(0);
+    }
+
+    25% {
+        opacity: 1;
+        transform:
+            translate(
+                calc(-50% + var(--x)),
+                calc(-50% + var(--y))
+            )
+            scale(1);
+    }
+
+    75% {
+        opacity: 1;
+        transform:
+            translate(
+                calc(-50% + var(--x)),
+                calc(-50% + var(--y))
+            )
+            scale(1.15);
+    }
+
+    100% {
+        opacity: 1;
+        transform:
+            translate(
+                calc(-50% + var(--x)),
+                calc(-50% + var(--y))
+            )
+            scale(1);
+    }
+}
+
+
+/* =========================================
+   💥 EXPLOSIÓN
+   ========================================= */
+
+.corazon-explosion {
+    animation:
+        corazonExplosion 0.9s cubic-bezier(.17,.67,.25,1.3) forwards !important;
+}
+
+@keyframes corazonExplosion {
+
+    0% {
+        opacity: 1;
+
+        transform:
+            translate(
+                calc(-50% + var(--x)),
+                calc(-50% + var(--y))
+            )
+            scale(1);
+    }
+
+    20% {
+        opacity: 1;
+        transform:
+            translate(
+                calc(-50% + var(--x)),
+                calc(-50% + var(--y))
+            )
+            scale(1.5);
+    }
+
+    100% {
+        opacity: 0;
+
+        transform:
+            translate(
+                calc(-50% + var(--explosion-x)),
+                calc(-50% + var(--explosion-y))
+            )
+            scale(0.15)
+            rotate(var(--rotation));
+    }
+}
+
+
+/* =========================================
+   💗 BOTÓN CARGANDO CORAZONES
+   ========================================= */
+
+.btn-glass-pink.corazones-cargando {
+
+    animation:
+        ingresarCorazonesPulso 0.7s ease-in-out infinite alternate !important;
+
+    background: rgba(255, 105, 180, 0.38);
+
+    box-shadow:
+        0 0 15px rgba(255, 105, 180, 1),
+        0 0 35px rgba(255, 105, 180, 0.9),
+        0 0 70px rgba(255, 105, 180, 0.7),
+        inset 0 0 25px rgba(255, 255, 255, 0.4);
+}
+
+@keyframes ingresarCorazonesPulso {
+
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.08);
+    }
+}
+
+
+/* =========================================
+   💥 EXPLOSIÓN FINAL DEL BOTÓN
+   ========================================= */
+
+.btn-glass-pink.explotando {
+
+    animation: botonExplosion 0.65s ease-out forwards !important;
+}
+
+@keyframes botonExplosion {
+
+    0% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+
+    40% {
+        transform: scale(1.25);
+        box-shadow:
+            0 0 25px #ff69b4,
+            0 0 60px #ff69b4,
+            0 0 120px rgba(255, 105, 180, 0.8);
+    }
+
+    100% {
+        transform: scale(1.8);
+        opacity: 0;
+        filter: blur(8px);
+    }
+}
+
 
         /* =========================================
            10. RESPONSIVE DESIGN
@@ -1122,29 +1471,195 @@ volumeSlider.value = 1;
             });
             volumeSlider.addEventListener('input', (e) => audio.volume = e.target.value);
 
-            // --- 3. LOGICA PANTALLA INTRODUCCION ---
-            const introScreen = document.getElementById('intro-screen');
-            const btnEnter = document.getElementById('btn-enter');
-            
-            if (btnEnter && introScreen) {
-                btnEnter.addEventListener('click', () => {
-                    // Ocultar pantalla
-                    introScreen.classList.add('intro-hidden');
-                    setTimeout(() => {
-                        introScreen.style.display = 'none';
-                    }, 800);
-                    
-                    // Activar autoplay de la música
-                    if (!isPlaying) {
-                        audio.play().then(() => {
-                            iconPlay.style.display = 'none';
-                            iconPause.style.display = 'block';
-                            musicUI.classList.add('is-playing');
-                            isPlaying = true;
-                        }).catch(e => console.log("Autoplay bloqueado:", e));
-                    }
-                });
+            // --- 3. LOGICA PANTALLA INTRODUCCION + 💗 CORAZONES ---
+
+const introScreen = document.getElementById('intro-screen');
+const btnEnter = document.getElementById('btn-enter');
+
+if (btnEnter && introScreen) {
+
+    btnEnter.addEventListener('click', () => {
+
+        // Evitar que se pueda pulsar varias veces
+        if (btnEnter.dataset.clicked === 'true') return;
+
+        btnEnter.dataset.clicked = 'true';
+
+        // =========================================
+        // 💗 CREAR CONTENEDOR DE CORAZONES
+        // =========================================
+
+        const heartsContainer = document.createElement('div');
+
+        heartsContainer.className = 'corazones-ingresar';
+
+        introScreen.appendChild(heartsContainer);
+
+
+        // =========================================
+        // 💗 CREAR MUCHOS CORAZONES
+        // =========================================
+
+        const cantidadCorazones = 70;
+
+        for (let i = 0; i < cantidadCorazones; i++) {
+
+            const heart = document.createElement('span');
+
+            heart.className = 'corazon-ingresar';
+
+            heart.innerHTML = '♥';
+
+
+            // Posición inicial alrededor del botón
+            const x = (Math.random() - 0.5) * 180;
+            const y = (Math.random() - 0.5) * 100;
+
+
+            // Dirección de la explosión
+            const angle = Math.random() * Math.PI * 2;
+
+            const distance = 450 + Math.random() * 750;
+
+            const explosionX = Math.cos(angle) * distance;
+
+            const explosionY = Math.sin(angle) * distance;
+
+
+            // Guardar posiciones
+            heart.style.setProperty('--x', `${x}px`);
+            heart.style.setProperty('--y', `${y}px`);
+
+            heart.style.setProperty(
+                '--explosion-x',
+                `${x + explosionX}px`
+            );
+
+            heart.style.setProperty(
+                '--explosion-y',
+                `${y + explosionY}px`
+            );
+
+            heart.style.setProperty(
+                '--rotation',
+                `${Math.random() * 720 - 360}deg`
+            );
+
+
+            // Tamaño aleatorio
+            heart.style.fontSize =
+                `${16 + Math.random() * 28}px`;
+
+
+            // Diferentes tonos rosas
+            const pinks = [
+                '#ff1493',
+                '#ff69b4',
+                '#ff85c8',
+                '#ff9ed6',
+                '#ffb6d9'
+            ];
+
+            heart.style.color =
+                pinks[Math.floor(Math.random() * pinks.length)];
+
+
+            // Aparecen progresivamente
+            heart.style.animationDelay =
+                `${Math.random() * 0.7}s`;
+
+
+            heartsContainer.appendChild(heart);
+        }
+
+
+        // =========================================
+        // 💗 EL BOTÓN SE CARGA DE ENERGÍA
+        // =========================================
+
+        btnEnter.classList.add('corazones-cargando');
+
+
+        // =========================================
+        // 💥 EXPLOSIÓN
+        // =========================================
+
+        setTimeout(() => {
+
+            btnEnter.classList.remove('corazones-cargando');
+
+            btnEnter.classList.add('explotando');
+
+
+            const hearts =
+                heartsContainer.querySelectorAll(
+                    '.corazon-ingresar'
+                );
+
+
+            hearts.forEach((heart, index) => {
+
+                setTimeout(() => {
+
+                    heart.classList.add(
+                        'corazon-explosion'
+                    );
+
+                }, Math.random() * 150);
+
+            });
+
+        }, 1800);
+
+
+        // =========================================
+        // 🚪 DESPUÉS DE LA EXPLOSIÓN → ENTRAR
+        // =========================================
+
+        setTimeout(() => {
+
+            // Ocultar pantalla
+            introScreen.classList.add('intro-hidden');
+
+            setTimeout(() => {
+
+                introScreen.style.display = 'none';
+
+            }, 800);
+
+
+            // =====================================
+            // 🎵 ACTIVAR AUTOPLAY DE LA MÚSICA
+            // =====================================
+
+            if (!isPlaying) {
+
+                audio.play()
+                    .then(() => {
+
+                        iconPlay.style.display = 'none';
+
+                        iconPause.style.display = 'block';
+
+                        musicUI.classList.add(
+                            'is-playing'
+                        );
+
+                        isPlaying = true;
+
+                    })
+                    .catch(e =>
+                        console.log(
+                            "Autoplay bloqueado:",
+                            e
+                        )
+                    );
             }
+
+        }, 2800);
+
+    });
+}
 
             // --- 4. PARALLAX ---
             let pCurrentX = 0, pCurrentY = 0;
@@ -1262,7 +1777,7 @@ volumeSlider.value = 1;
             // --- 6. QUOTES SYSTEM (FADE IN/OUT) ---
             // EDITAR TEXTO AQUI: Las frases que se alternan con efecto FADE
         const heroQuotes = [
-    { title: "🩷una reyna donde balla.🩷", desc: "" },
+    { title: "🩷una reina, donde valla.🩷", desc: "" },
     { title: "La sinceridad es el reflejo de un corazón transparente; genera confianza y fortalece cada relación..", desc: "" },
     { title: "La amistad es un tesoro que se construye con respeto, apoyo y momentos compartidos a lo largo del tiempo.", desc: "" } // ← añadida
 ];
@@ -1509,6 +2024,202 @@ speed = 1;
 );
 
 }
+
+
+/* =========================================
+   💗 CORAZONES DEL BOTÓN INGRESAR
+   ========================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const boton = document.getElementById("btn-enter");
+
+    if (!boton) {
+        console.log("💗 No se encontró #btn-enter");
+        return;
+    }
+
+    /* Crear contenedor de corazones */
+    const corazonesContainer = document.createElement("div");
+
+    corazonesContainer.className = "corazones-ingresar";
+
+    boton.appendChild(corazonesContainer);
+
+
+    /* =========================================
+       💗 CLICK EN INGRESAR
+       ========================================= */
+
+    boton.addEventListener("click", function () {
+
+        /* Evitar doble clic */
+        if (boton.dataset.explotando === "true") {
+            return;
+        }
+
+        boton.dataset.explotando = "true";
+
+
+        /* Activar brillo/carga */
+        boton.classList.add("corazones-cargando");
+
+
+        /* =====================================
+           💗 CREAR CORAZONES
+           ===================================== */
+
+        const cantidad = 60;
+
+        for (let i = 0; i < cantidad; i++) {
+
+            const corazon = document.createElement("span");
+
+            corazon.className = "corazon-ingresar";
+
+            corazon.textContent = "♥";
+
+
+            /* Posición donde se acumulan */
+
+            const x =
+                (Math.random() - 0.5) * 180;
+
+            const y =
+                (Math.random() - 0.5) * 90;
+
+
+            /* Dirección de explosión */
+
+            const angulo =
+                Math.random() * Math.PI * 2;
+
+            const distancia =
+                200 + Math.random() * 400;
+
+
+            const explosionX =
+                Math.cos(angulo) * distancia;
+
+            const explosionY =
+                Math.sin(angulo) * distancia;
+
+
+            /* Guardar posiciones */
+
+            corazon.style.setProperty(
+                "--x",
+                `${x}px`
+            );
+
+            corazon.style.setProperty(
+                "--y",
+                `${y}px`
+            );
+
+            corazon.style.setProperty(
+                "--explosion-x",
+                `${x + explosionX}px`
+            );
+
+            corazon.style.setProperty(
+                "--explosion-y",
+                `${y + explosionY}px`
+            );
+
+            corazon.style.setProperty(
+                "--rotation",
+                `${Math.random() * 720 - 360}deg`
+            );
+
+
+            /* Tamaño aleatorio */
+
+            corazon.style.fontSize =
+                `${16 + Math.random() * 25}px`;
+
+
+            /* Rosas */
+
+            const colores = [
+                "#ff1493",
+                "#ff69b4",
+                "#ff85c8",
+                "#ff9ed6",
+                "#ffb6d9"
+            ];
+
+            corazon.style.color =
+                colores[
+                    Math.floor(
+                        Math.random() * colores.length
+                    )
+                ];
+
+
+            /* Variación de aparición */
+
+            corazon.style.animationDelay =
+                `${Math.random() * 0.7}s`;
+
+
+            corazonesContainer.appendChild(
+                corazon
+            );
+        }
+
+
+        /* =====================================
+           💥 EXPLOSIÓN
+           ===================================== */
+
+        setTimeout(function () {
+
+            boton.classList.remove(
+                "corazones-cargando"
+            );
+
+            boton.classList.add(
+                "explotando"
+            );
+
+
+            const corazones =
+                corazonesContainer.querySelectorAll(
+                    ".corazon-ingresar"
+                );
+
+
+            corazones.forEach(function (corazon) {
+
+                setTimeout(function () {
+
+                    corazon.classList.add(
+                        "corazon-explosion"
+                    );
+
+                }, Math.random() * 180);
+
+            });
+
+        }, 1800);
+
+
+        /* =====================================
+           🧹 LIMPIAR CORAZONES
+           ===================================== */
+
+        setTimeout(function () {
+
+            corazonesContainer.innerHTML = "";
+
+        }, 3200);
+
+    });
+
+});
+
+
 
 </script>
 </script>
